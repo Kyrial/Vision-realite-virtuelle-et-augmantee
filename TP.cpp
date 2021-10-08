@@ -94,10 +94,43 @@ int Intersection( double L[3], int Dx, int Dy, int x_inter[2], int y_inter[2] )
 
 int main(int argc, char *argv[])
 {
-	int nombre_de_points = 2, n=0 ;
-	int xd[nombre_de_points], yd[nombre_de_points], xg[nombre_de_points], yg[nombre_de_points] ;
+	int nombre_de_points = 8, n=2 ;
+
+/*
+point G n : 0 138 255 
+point D n : 0 158 256 
+point G n : 1 157 316 
+point D n : 1 172 318 
+
+point G n : 0 231 145 
+point D n : 0 211 148 
+point G n : 1 158 59 
+point D n : 1 126 63 
+
+point G n : 0 129 445 
+point D n : 0 131 446 
+point G n : 1 55 280 
+point D n : 1 35 283 
+
+point G n : 0 137 343 
+point D n : 0 147 343 
+point G n : 1 180 91 
+point D n : 1 157 93
+
+*/
+
+	int xd[nombre_de_points] = {158,172      , 211, 126   , 131, 35,    147, 157};
+	int yd[nombre_de_points] = {256, 318     , 148, 63    , 446, 283,   343, 93};
+
+	int xg[nombre_de_points] = {138, 157    ,231, 158     , 129, 55,    137, 180};
+	int yg[nombre_de_points] = {255, 316    ,145, 59      , 445, 280,   343, 91  };
 	char droite_gaughe = 'd' ;
-	
+
+
+
+
+
+
 	if(argc<2) 
 	{
 		printf("\nCe programme a deux arguments d'appel qui sont les deux images droite et gauche\n") ;
@@ -112,21 +145,74 @@ int main(int argc, char *argv[])
 	// Creation des objets d'affichage
 	CImgDisplay Droite_disp(imageD,"Image droite"), Gauche_disp(imageG,"Image gauche");
 	
+
+
+
+	// Definition d'une matrice de 5 lignes et 3 colonnes (et un plan) en double precision
+	// remplie au depart de 0
+	CImg <double> A(8,8,1,1,0) ; 
+
+	CImg <double>::iterator it2 ; // defiition d'un iterateur (permet d'avoir le premier element de la matrice)
+	int NlinA, NcolA, NlinB, NcolB, NlinC, NcolC, lin, col;
+	
+	NlinA = A.height() ;
+	NcolA = A.width() ;
+	
+	// Remplissage de la matrice A avec des valeurs aleatoires entre 0 et 10
+	//matrice_A.rand(0,10) ;
+	
+	// Affichage de la matrice A
+	it2 = A.begin() ;
+	for(lin=0 ; lin<NlinA ; lin++)
+	{
+		A[lin*NcolA] = xg[lin]*xd[lin];
+		A[lin*NcolA+1] = xg[lin]*yd[lin];
+		A[lin*NcolA+2] = xg[lin];
+		A[lin*NcolA+3] = yg[lin]*xd[lin];
+		A[lin*NcolA+4] = yg[lin]*yd[lin];
+		A[lin*NcolA+5] = yg[lin];
+		A[lin*NcolA+6] = xd[lin];
+		A[lin*NcolA+7] = yd[lin];
+
+
+		for(int  col=0 ; col<NcolA; col++, it2++)
+		{
+			
+			printf("[%g]",(*it2)) ;
+			//printf("%i, ", matrice[lin*Ncol+col]);
+		}
+		printf("\n") ;
+	}
+
+	CImg <double> B(1,8,1,1,-1) ; 
+	NlinB = B.height() ;
+ 	NcolB = B.width() ;
+ 	CImg <double> f(1,9,1,1,-1) ; 
+
+	CImg <double> C(NlinA,NcolB,1,1,0) ;
+ 	NlinC = C.height() ;
+ 	NcolC = C.width() ;
+
+CImg <double> At =	A.pseudoinvert();
+MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, NcolA, NcolC) ;
+	
+	
 	// Selection de nombre_de_points paires de points (en commencant par l'image droite
 	while (!Droite_disp.is_closed() && !Gauche_disp.is_closed() && n<nombre_de_points) 
 	{
 		switch (droite_gaughe) 
 		{
 			case 'd' :
-  		Gauche_disp.set_title("%s","Image gauche");
-		  Droite_disp.set_title("%s","Cliquez ici") ;
-				Droite_disp.wait();
+  			Gauche_disp.set_title("%s","Image gauche");
+			Droite_disp.set_title("%s","Cliquez ici") ;
+			Droite_disp.wait();
 				if (Droite_disp.button() && Droite_disp.mouse_y()>=0) 
 				{
 					yd[n] = Droite_disp.mouse_y();
 					xd[n] = Droite_disp.mouse_x();
 					imageD.draw_circle(xd[n],yd[n],3,red,1.0,1).display(Droite_disp);
 					droite_gaughe = 'g' ;
+					
 				} break ;
 			case 'g' :
 		  Droite_disp.set_title("%s","Image droite") ;
@@ -137,7 +223,9 @@ int main(int argc, char *argv[])
 					yg[n] = Gauche_disp.mouse_y();
 					xg[n] = Gauche_disp.mouse_x();
 					imageG.draw_circle(xg[n],yg[n],3,blue,1.0,1).display(Gauche_disp);
-					droite_gaughe = 'd' ; n++ ;
+					droite_gaughe = 'd' ; 
+
+					n++ ;
 				} break ;
 			default : break;
 		}		
@@ -148,6 +236,10 @@ int main(int argc, char *argv[])
 	{
 		imageD.draw_circle(xd[n],yd[n],3,green,1.0,1).display(Droite_disp);
 		imageG.draw_circle(xg[n],yg[n],3,green,1.0,1).display(Gauche_disp);
+		printf("point G n : %i %d %d \n",n, xg[n],yg[n]);
+		printf("point D n : %i %d %d \n",n, xd[n],yd[n]);
+
+		
 	}
 	
 	// Selection de deux points dans l'image droite et affichage de la droite passant par ces deux points
@@ -183,7 +275,7 @@ int main(int argc, char *argv[])
 	
 	CImg <double> matrice_A(5,3,1,1,0) ; 
 	CImg <double>::iterator it ; // defiition d'un iterateur (permet d'avoir le premier element de la matrice)
-	int lin, col, NlinA, NcolA, NlinB, NcolB, NlinC, NcolC ;
+//	int lin, col, NlinA, NcolA, NlinB, NcolB, NlinC, NcolC;
 	
 	NlinA = matrice_A.height() ;
 	NcolA = matrice_A.width() ;
@@ -203,11 +295,11 @@ int main(int argc, char *argv[])
 	}
 	
  // Definition de la matrice B comme etant la pseudo-inverse de A 
-	CImg <double> matrice_B =	matrice_A.pseudoinvert() ;
+	CImg <double> matrice_B =	matrice_A.pseudoinvert();
 	printf("\n\n\n") ;
 	
-	NlinB = matrice_B.height() ;
-	NcolB = matrice_B.width() ;
+//	NlinB = matrice_B.height() ;
+//	NcolB = matrice_B.width() ;
 	
 	// Affichage de la matrice B
 	it = matrice_B.begin() ;
@@ -221,8 +313,8 @@ int main(int argc, char *argv[])
 	}
 	
 	CImg <double> matrice_C(NlinA,NcolB,1,1,0) ;
-	NlinC = matrice_C.height() ;
-	NcolC = matrice_C.width() ;
+	//NlinC = matrice_C.height() ;
+	//NcolC = matrice_C.width() ;
 	
 	printf("\n\n\n") ;
 	
