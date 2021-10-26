@@ -184,21 +184,10 @@ point D n : 1 157 93
 		printf("\n") ;
 	}
 
-	CImg <double> B(1,8,1,1,-1) ; 
-	NlinB = B.height() ;
- 	NcolB = B.width() ;
- 	CImg <double> f(1,9,1,1,-1) ; 
 
-	CImg <double> C(NlinA,NcolB,1,1,0) ;
- 	NlinC = C.height() ;
- 	NcolC = C.width() ;
-
-CImg <double> At =	A.pseudoinvert();
-MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, NcolA, NcolC) ;
-	
 	
 	// Selection de nombre_de_points paires de points (en commencant par l'image droite
-	while (!Droite_disp.is_closed() && !Gauche_disp.is_closed() && n<nombre_de_points) 
+/*	while (!Droite_disp.is_closed() && !Gauche_disp.is_closed() && n<nombre_de_points) 
 	{
 		switch (droite_gaughe) 
 		{
@@ -229,7 +218,7 @@ MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, Nc
 				} break ;
 			default : break;
 		}		
-	}
+	}*/
 	
 	// Affichage de tous les points en vert
 	for(n=0 ; n<nombre_de_points ; n++) 
@@ -272,7 +261,7 @@ MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, Nc
  
 	// Definition d'une matrice de 5 lignes et 3 colonnes (et un plan) en double precision
 	// remplie au depart de 0
-	
+	/*
 	CImg <double> matrice_A(5,3,1,1,0) ; 
 	CImg <double>::iterator it ; // defiition d'un iterateur (permet d'avoir le premier element de la matrice)
 //	int lin, col, NlinA, NcolA, NlinB, NcolB, NlinC, NcolC;
@@ -293,16 +282,81 @@ MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, Nc
 		}
 		printf("\n") ;
 	}
+	*/
+
+	CImg <double> B(1,8,1,1,-1) ; 
+	NlinB = B.height() ;
+ 	NcolB = B.width() ;
+ 	CImg <double> f(1,9,1,1,-1) ; 
+
+	CImg <double> C(NlinA,NcolA,1,1,0) ;
+ 	NlinC = C.height() ;
+ 	NcolC = C.width() ;
+
+	CImg <double> At =	A.pseudoinvert();
+	//C = (At * A)
+	MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinA, NcolA, NcolB) ;
 	
- // Definition de la matrice B comme etant la pseudo-inverse de A 
-	CImg <double> matrice_B =	matrice_A.pseudoinvert();
+	//C = (At * A)-1
+	C = C.invert();
+
+	//D = (At * A)-1 * At
+	CImg <double> D(8,8,1,1,0) ;
+	MatMult((double *)C.begin(), (double *)At.begin(), (double *)D.begin(), NlinA, NcolA, NcolB) ;
+	
+	//res = (At * A)-1 * At * B
+	CImg <double> res(8,1,1,1,0) ;
+	MatMult((double *)D.begin(), (double *)B.begin(), (double *)res.begin(), NlinA, NcolA, NcolB) ;
+
+	printf("matrice result f \n");
+	int 	NlinRes = res.height() ;
+ 	int NcolRes = res.width() ;
+
+	CImg <double>::iterator it= res.begin() ;
+	for( lin=0 ; lin<NlinRes ; lin++)
+	{
+		for( col=0 ; col<NcolRes ; col++, it++)
+		{
+			printf("[%g]",(*it)) ;
+		}
+		printf("\n") ;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+	CImg <double> matrice_At =	matrice_A.pseudoinvert();
 	printf("\n\n\n") ;
 	
-//	NlinB = matrice_B.height() ;
-//	NcolB = matrice_B.width() ;
+	NlinB = matrice_At.height() ;
+	NcolB = matrice_At.width() ;
 	
 	// Affichage de la matrice B
-	it = matrice_B.begin() ;
+	it = matrice_At.begin() ;
 	for( lin=0 ; lin<NlinB ; lin++)
 	{
 		for( col=0 ; col<NcolB ; col++, it++)
@@ -319,7 +373,20 @@ MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, Nc
 	printf("\n\n\n") ;
 	
 	// Calcul de C = A * B au sens des matrices 
-	MatMult((double *)matrice_A.begin(), (double *)matrice_B.begin(), (double *)matrice_C.begin(), NlinC, NcolA, NcolC) ;
+	//C = (At * A)
+	MatMult((double *)matrice_A.begin(), (double *)matrice_At.begin(), (double *)matrice_C.begin(), NlinC, NcolA, NcolC) ;
+	
+	//C = (At * A)-1
+	matrice_C = matrice_C.invert();
+
+	//D = (At * A)-1 * At
+	CImg <double> matrice_D(5,3,1,1,0) ;
+	MatMult((double *)matrice_C.begin(), (double *)matrice_At.begin(), (double *)matrice_D.begin(), NlinC, NcolA, NcolC) ;
+	
+	//C = (At * A)-1 * At * B
+	MatMult((double *)matrice_D.begin(), (double *)B.begin(), (double *)matrice_C.begin(), NlinC, NcolA, NcolC) ;
+	
+
 	
 	// Affichage de la matrice C
 	it = matrice_C.begin() ;
@@ -331,7 +398,7 @@ MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, Nc
 		}
 		printf("\n") ;
 	}
-	
+	*/
 	// Attente de la fermeture d'une des images pour arrêter le programme
 	while (!Droite_disp.is_closed() && !Gauche_disp.is_closed()) ;
 	
