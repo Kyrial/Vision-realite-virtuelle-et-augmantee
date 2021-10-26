@@ -92,6 +92,20 @@ int Intersection( double L[3], int Dx, int Dy, int x_inter[2], int y_inter[2] )
 }
 
 
+void printMatrice(CImg <double>::iterator it, int nLine, int nCol){
+	//	CImg <double>::iterator it= res.begin() ;
+	for(int lin=0 ; lin<nLine ; lin++)
+	{
+		for(int col=0 ; col<nCol ; col++, it++)
+		{
+			printf("[%g]",(*it)) ;
+		}
+		printf("\n") ;
+	}
+}
+
+
+
 int main(int argc, char *argv[])
 {
 	int nombre_de_points = 8, n=2 ;
@@ -232,7 +246,7 @@ point D n : 1 157 93
 	}
 	
 	// Selection de deux points dans l'image droite et affichage de la droite passant par ces deux points
-	n=0 ;
+/*	n=0 ;
 	double delta, L[3] ;
 	int x_inter[2], y_inter[2] ;
 	while (!Droite_disp.is_closed() && !Gauche_disp.is_closed() && n<2) 
@@ -256,7 +270,14 @@ point D n : 1 157 93
 			
 	n = Intersection(L, imageD.width(), imageD.height(), x_inter, y_inter ) ;
 	if(n)	imageD.draw_line(x_inter[0],y_inter[0],x_inter[1],y_inter[1],red).display(Droite_disp);
-	
+	*/
+
+
+
+
+
+
+
  // Partie calcul sur les matrices
  
 	// Definition d'une matrice de 5 lignes et 3 colonnes (et un plan) en double precision
@@ -287,118 +308,124 @@ point D n : 1 157 93
 	CImg <double> B(1,8,1,1,-1) ; 
 	NlinB = B.height() ;
  	NcolB = B.width() ;
- 	CImg <double> f(1,9,1,1,-1) ; 
+ 	CImg <double> f(1,8,1,1,-1) ; 
 
 	CImg <double> C(NlinA,NcolA,1,1,0) ;
  	NlinC = C.height() ;
  	NcolC = C.width() ;
+	printf("\n matrice result A \n");
+	printMatrice(A.begin(),  A.height(), A.width()  );
+/*	CImg <double> At =	A.transpose();
+	printf("\n matrice result At \n");
+	printMatrice(At.begin(), At.height(), At.width());*/
 
-	CImg <double> At =	A.pseudoinvert();
-	//C = (At * A)
-	MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinA, NcolA, NcolB) ;
-	
-	//C = (At * A)-1
-	C = C.invert();
+			printf("\n matrice result B \n");
+			printMatrice(B.begin(), B.height(), B.width());
 
-	//D = (At * A)-1 * At
-	CImg <double> D(8,8,1,1,0) ;
-	MatMult((double *)C.begin(), (double *)At.begin(), (double *)D.begin(), NlinA, NcolA, NcolB) ;
-	
-	//res = (At * A)-1 * At * B
-	CImg <double> res(8,1,1,1,0) ;
-	MatMult((double *)D.begin(), (double *)B.begin(), (double *)res.begin(), NlinA, NcolA, NcolB) ;
+//CImg <double> res(1,8,1,1,0) ;
 
-	printf("matrice result f \n");
-	int 	NlinRes = res.height() ;
- 	int NcolRes = res.width() ;
-
-	CImg <double>::iterator it= res.begin() ;
-	for( lin=0 ; lin<NlinRes ; lin++)
-	{
-		for( col=0 ; col<NcolRes ; col++, it++)
-		{
-			printf("[%g]",(*it)) ;
-		}
-		printf("\n") ;
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	//f = (At *A)-1 * At * B
+	//res = At.mul(A).transpose().mul(At).mul(B);
+	//CImg <double> res = A.pseudoinvert().mul(B);
 /*
 
-
-	CImg <double> matrice_At =	matrice_A.pseudoinvert();
-	printf("\n\n\n") ;
-	
-	NlinB = matrice_At.height() ;
-	NcolB = matrice_At.width() ;
-	
-	// Affichage de la matrice B
-	it = matrice_At.begin() ;
-	for( lin=0 ; lin<NlinB ; lin++)
-	{
-		for( col=0 ; col<NcolB ; col++, it++)
-		{
-			printf("[%g]",(*it)) ;
-		}
-		printf("\n") ;
-	}
-	
-	CImg <double> matrice_C(NlinA,NcolB,1,1,0) ;
-	//NlinC = matrice_C.height() ;
-	//NcolC = matrice_C.width() ;
-	
-	printf("\n\n\n") ;
-	
-	// Calcul de C = A * B au sens des matrices 
 	//C = (At * A)
-	MatMult((double *)matrice_A.begin(), (double *)matrice_At.begin(), (double *)matrice_C.begin(), NlinC, NcolA, NcolC) ;
+	MatMult((double *)At.begin(), (double *)A.begin(),(double *)C.begin(), NlinC, NcolA, NcolC) ;
 	
-	//C = (At * A)-1
-	matrice_C = matrice_C.invert();
-
+			printf("\nmatrice result C \n");
+			printMatrice(C.begin(),   C.height(), C.width());
+			//C = (At * A)-1
+		//*C = C.invert();
+		//	printf("\nmatrice result C-1 \n");
+		//	printMatrice(C.begin(),   C.height(), C.width());
 	//D = (At * A)-1 * At
-	CImg <double> matrice_D(5,3,1,1,0) ;
-	MatMult((double *)matrice_C.begin(), (double *)matrice_At.begin(), (double *)matrice_D.begin(), NlinC, NcolA, NcolC) ;
+	CImg <double> D(8,8,1,1,0) ;
+	MatMult((double *)C.invert().begin(), (double *)At.begin(), (double *)D.begin(), NlinA, NcolA, NcolB) ;
 	
-	//C = (At * A)-1 * At * B
-	MatMult((double *)matrice_D.begin(), (double *)B.begin(), (double *)matrice_C.begin(), NlinC, NcolA, NcolC) ;
-	
+			printf("\nmatrice result D \n");
+			printMatrice(D.begin(),   D.height(), D.width());
+			printf("\n matrice result B \n");
+			printMatrice(B.begin(), B.height(), B.width());
 
-	
-	// Affichage de la matrice C
-	it = matrice_C.begin() ;
-	for( lin=0 ; lin<NlinC ; lin++)
-	{
-		for( col=0 ; col<NcolC ; col++, it++)
-		{
-			printf("[%g]",(*it)) ;
-		}
-		printf("\n") ;
-	}
+
+	//res = (At * A)-1 * At * B
 	*/
+	MatMult((double *)A.pseudoinvert().begin(), (double *)B.begin(), (double *)f.begin(), NlinA, NcolA, NcolB) ;
+
+	printf("\n matrice result f \n");
+	printMatrice(f.begin(), f.height(), f.width());
+
+
+	CImg <double> F(3,3,1,1,0);
+	CImg <double>::iterator it_f = f.begin() ; 
+//	CImg <double>::iterator it_F = F.begin() ; 
+	for( lin=0 ; lin<3 ; lin++)
+	{
+		for( col=0 ; col<3 ; col++, it_f++)
+		{	if(lin*3+col==8)
+				F[lin*3+col]=1;
+			else
+			F[lin*3+col]=f[lin*3+col];
+
+		}
+		
+	}
+	
+	printf("\n matrice result F \n");
+	printMatrice(F.begin(), F.height(), F.width());
+
+
+
+
+	n=0 ;
+	double delta, L[3] ;
+	int x_click[2], y_click[2] ;
+	while (!Droite_disp.is_closed() && !Gauche_disp.is_closed() /*&& n<2*/) 
+	{
+		Droite_disp.set_title("%s","Cliquez un point point") ;
+		Droite_disp.wait();
+		if (Droite_disp.button() && Droite_disp.mouse_y()>=0) 
+		{
+
+			CImg <double> Md(3,1,1,1,0);
+			CImg <double> Mg(3,1,1,1,0);
+			CImg <double> Mg_vec(3,1,1,1,0);
+
+			Md[0] = Droite_disp.mouse_y();
+			Md[1] = Droite_disp.mouse_x();
+			Md[2] = 1;
+
+			//MatMult((double *)Md.begin(), (double *)F.begin(), (double *)Mg.begin(), 1, 3, 3);
+			MatMult((double *)F.invert().begin(), (double *)Md.begin(), (double *)Mg_vec.begin(), 3, 3, 1);
+
+				printf("\n matrice result Mg \n");
+				printMatrice(Mg_vec.begin(), Mg_vec.height(), Mg_vec.width());
+
+
+			//MatMult((double *)F.invert().begin(), (double *)Md.invert.begin(), (double *)Mg_vec.begin(), 1, 3, 3);
+
+
+			imageD.draw_circle(Md[1],Md[0],3,red,1.0,1).display(Droite_disp);
+		//	imageG.draw_circle(Mg[1],Mg[0],3,red,1.0,1).display(Gauche_disp);
+		//	imageG.draw_line(Mg[1],Mg[0],Mg[1]*Mg_vec[1],Mg[0]*Mg_vec[0],red).display(Gauche_disp);
+			//n = n+1 ;
+			int x_inter[2], y_inter[2] ;
+			n = Intersection(Mg_vec, imageD.width(), imageD.height(), x_inter, y_inter ) ;
+		if(n)	imageG.draw_line(x_inter[0],y_inter[0],x_inter[1],y_inter[1],red).display(Gauche_disp);
+		}
+	}
+	//delta = (double)xd[0]*(double)yd[1] - (double)xd[1]*(double)yd[0] ;
+//	imageD.draw_line(xd[0],yd[0],xd[1],yd[1],green).display(Droite_disp);
+
+
+
+
+
+
+
+
+
+
 	// Attente de la fermeture d'une des images pour arrêter le programme
 	while (!Droite_disp.is_closed() && !Gauche_disp.is_closed()) ;
 	
